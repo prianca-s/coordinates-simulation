@@ -1,7 +1,7 @@
 package com.locus.project.handlers.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.snakeyaml.Yaml;
+import com.locus.project.config.ConfigUtil;
 import com.locus.project.config.ServiceConfig;
 import com.locus.project.exceptions.BusinessException;
 import com.locus.project.handlers.ApiHandler;
@@ -22,7 +22,8 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -41,9 +42,9 @@ public class ApiHandlerImpl implements ApiHandler {
         return INSTANCE;
     }
 
-    private CloseableHttpAsyncClient httpclient;
-    private static ServiceConfig serviceConfig;
+    private ServiceConfig serviceConfig;
 
+    private CloseableHttpAsyncClient httpclient;
 
     private ApiHandlerImpl() {
         RequestConfig requestConfig;
@@ -53,23 +54,11 @@ public class ApiHandlerImpl implements ApiHandler {
                 .setSocketTimeout(CONNECTION_TIMEOUT_IN_SECONDS * 1000).build();
         httpclient = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig).setMaxConnPerRoute(100).setMaxConnTotal(100).build();
         httpclient.start();
-
-        InputStream input = null;
-
-        try {
-            input = new FileInputStream(new File(
-                    "src/main/java/com/locus/project/config.yml"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        Yaml yaml = new Yaml();
-        serviceConfig=yaml.loadAs(input, ServiceConfig.class);
+        serviceConfig = ConfigUtil.getServiceConfig();
 
     }
 
     public DirectionApiResponse getDirections(DirectionApiRequest directionApiRequest) throws IOException, URISyntaxException, InterruptedException, ExecutionException, TimeoutException {
-
-
         /**
          * SET GOOGLE KEY ON DIRECTION_API REQUEST
          * */
@@ -85,7 +74,6 @@ public class ApiHandlerImpl implements ApiHandler {
 
         HttpGet request = new HttpGet(String.valueOf(uriBuilder));
 
-        httpclient.start();
         Future<HttpResponse> future = httpclient.execute(request, null);
 
         HttpResponse response = future.get(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS);
@@ -138,7 +126,6 @@ public class ApiHandlerImpl implements ApiHandler {
 
         request.setEntity(entity);
 
-        httpclient.start();
         Future<HttpResponse> future = httpclient.execute(request, null);
 
         HttpResponse response = future.get(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS);
@@ -163,7 +150,6 @@ public class ApiHandlerImpl implements ApiHandler {
         String password = serviceConfig.getInternal().getPassword();
         String authorizationHeader = "Basic " + new String(Base64.encodeBase64((clientId + ":" + password).getBytes()));
         return authorizationHeader;
-
     }
 
 }

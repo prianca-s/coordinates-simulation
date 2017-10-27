@@ -11,4 +11,5 @@ import lombok.Data;
 public class ServiceConfig {
     private GoogleCredentials googleApi;
     private Internal internal;
+    private boolean pushData;
 }

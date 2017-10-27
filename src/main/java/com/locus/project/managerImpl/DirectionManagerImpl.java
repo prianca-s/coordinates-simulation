@@ -1,5 +1,7 @@
 package com.locus.project.managerImpl;
 
+import com.locus.project.config.ConfigUtil;
+import com.locus.project.config.ServiceConfig;
 import com.locus.project.exceptions.BusinessException;
 import com.locus.project.handlers.ApiHandler;
 import com.locus.project.handlers.impl.ApiHandlerImpl;
@@ -75,14 +77,14 @@ public class DirectionManagerImpl implements DirectionManager {
                     totalDistance = step.getDistance().getValue();
                     totalTime = step.getDuration().getValue();
 //                  IN m/sec
-                    avgSpeed = totalDistance/totalTime;
+                    avgSpeed = totalDistance / totalTime;
 
                     List<Coordinate> polyLineCoordinates = PolylineDecoder.decodePolyLine(step.getPolyline().getPoints());
 //                    for (Coordinate coordinate : polyLineCoordinates) {
 //                        System.out.println(coordinate.getLat()+","+coordinate.getLng());
 //                    }
                     DateTime date = new DateTime();
-                    DateTime currTime = date.toDateTime( DateTimeZone.UTC );
+                    DateTime currTime = date.toDateTime(DateTimeZone.UTC);
 
                     Coordinate startCoordinate = polyLineCoordinates.get(first);
                     for (int j = 1; j < polyLineCoordinates.size(); j++) {
@@ -114,13 +116,16 @@ public class DirectionManagerImpl implements DirectionManager {
                         startCoordinate = endCoordinate;
                     }
                 }
-                try {
-//                  API CALL TO PUSH DATA TO SERVER
-                    pushDataToServer(polylineDataList);
-                } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                    System.out.println("Timeout occur while getting ApiResponse"+ e);
-                    e.printStackTrace();
-                    throw new BusinessException("Timeout occur while getting ApiResponse", REQUEST_TIMEOUT);
+                ServiceConfig serviceConfig = ConfigUtil.getServiceConfig();
+                if (serviceConfig.isPushData()) {
+                    try {
+                        // API CALL TO PUSH DATA TO SERVER
+                        pushDataToServer(polylineDataList);
+                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        System.out.println("Timeout occur while getting ApiResponse" + e);
+                        e.printStackTrace();
+                        throw new BusinessException("Timeout occur while getting ApiResponse", REQUEST_TIMEOUT);
+                    }
                 }
             }
         }

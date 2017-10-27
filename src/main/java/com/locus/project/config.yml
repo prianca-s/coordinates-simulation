@@ -4,7 +4,7 @@ googleApi:
   directionPath: /maps/api/directions/json
 
 internal:
-  userId: 
+  userId:
   clientId:
   hostname:
   password:
@@ -12,3 +12,4 @@ internal:
   userPath: /user/
   locationPath: /location
 
+pushData: false
