@@ -1,0 +1,14 @@
+googleApi:
+  key:
+  hostname: maps.googleapis.com
+  directionPath: /maps/api/directions/json
+
+internal:
+  userId: 
+  clientId:
+  hostname:
+  password:
+  clientPath: /client/
+  userPath: /user/
+  locationPath: /location
+
